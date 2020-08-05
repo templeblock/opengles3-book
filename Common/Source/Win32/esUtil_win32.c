@@ -76,8 +76,10 @@ LRESULT WINAPI ESWindowProc ( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             eglSwapBuffers ( esContext->eglDisplay, esContext->eglSurface );
          }
 
-
-         ValidateRect ( esContext->eglNativeWindow, NULL );
+         if ( esContext )
+         {
+            ValidateRect ( esContext->eglNativeWindow, NULL );
+         }
       }
       break;
 
@@ -164,7 +166,12 @@ GLboolean WinCreate ( ESContext *esContext, const char *title )
 
    // Set the ESContext* to the GWL_USERDATA so that it is available to the
    // ESWindowProc
-   SetWindowLongPtr (  esContext->eglNativeWindow, GWL_USERDATA, ( LONG ) ( LONG_PTR ) esContext );
+#ifdef _WIN64
+   //In LLP64 LONG is stll 32bit.
+   SetWindowLongPtr( esContext->eglNativeWindow, GWL_USERDATA, ( LONGLONG ) ( LONG_PTR )esContext);
+#else
+   SetWindowLongPtr ( esContext->eglNativeWindow, GWL_USERDATA, ( LONG ) ( LONG_PTR ) esContext );
+#endif
 
 
    if ( esContext->eglNativeWindow == NULL )
@@ -221,7 +228,7 @@ void WinLoop ( ESContext *esContext )
 }
 
 ///
-//  Global extern.  The application must declsare this function
+//  Global extern.  The application must declare this function
 //  that runs the application.
 //
 extern int esMain ( ESContext *esContext );
